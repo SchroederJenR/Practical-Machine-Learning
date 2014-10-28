@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<!-- saved from url=(0014)about:internet -->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=9" >
+
+<title>Practical Machine Learning Course Project</title>
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 12px;
+   margin: 8px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 { 
+   font-size:2.2em; 
+}
+
+h2 { 
+   font-size:1.8em; 
+}
+
+h3 { 
+   font-size:1.4em; 
+}
+
+h4 { 
+   font-size:1.0em; 
+}
+
+h5 { 
+   font-size:0.9em; 
+}
+
+h6 { 
+   font-size:0.8em; 
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre {	
+   margin-top: 0;
+   max-width: 95%;
+   border: 1px solid #ccc;
+   white-space: pre-wrap;
+}
+
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code.r, code.cpp {
+   background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * { 
+      background: transparent !important; 
+      color: black !important; 
+      filter:none !important; 
+      -ms-filter: none !important; 
+   }
+
+   body { 
+      font-size:12pt; 
+      max-width:100%; 
+   }
+       
+   a, a:visited { 
+      text-decoration: underline; 
+   }
+
+   hr { 
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote { 
+      padding-right: 1em; 
+      page-break-inside: avoid; 
+   }
+
+   tr, img { 
+      page-break-inside: avoid; 
+   }
+
+   img { 
+      max-width: 100% !important; 
+   }
+
+   @page :left { 
+      margin: 15mm 20mm 15mm 10mm; 
+   }
+     
+   @page :right { 
+      margin: 15mm 10mm 15mm 20mm; 
+   }
+
+   p, h2, h3 { 
+      orphans: 3; widows: 3; 
+   }
+
+   h2, h3 { 
+      page-break-after: avoid; 
+   }
+}
+
+</style>
+
+
+
+
+
+</head>
+
+<body>
+<h1>Practical Machine Learning Course Project</h1>
+
+<h2>Predict Activity Quality from Activity Monitors</h2>
+
+<p>The original dataset consisted of 159 variables and 19622 observations.  100 of the variables consisted largely of missing values so these were deleted because they were uninformative.  The function nearZeroVar() was used to determine whether any more variables were candidates for removal because of low variability (percentage of unique values <20% and ration of most frequent to second most frequent value >20), none of these variables were found.  The function anyNA() was used to determine if there were any missing values in the remaining variables and none were found.</p>
+
+<h2>Cross-Validation</h2>
+
+<p>The dataset was split into balanced training and test sets using the createDataPartition() function.  To ensure reproducibilty of results, first the seed was set.  Random subsamples were constructed, assigning 60% of observations to the training set and 40% to the test set, having equivalent distributions of the outcome variable &ldquo;classe.&rdquo;  The 60/40 proportions were chosen to avoid over-fitting the model to the training set (thus the training set is not overly large.)  Evaluating model performance on two independent datasets (training and test) is the method of cross-validation I employed.</p>
+
+<h2>Pre-processing of the Training Set</h2>
+
+<p>The Training Set consisted of 11776 observations, 52 predictor variables and 1 outcome variable.  Distributions of predictors were examined, and an overall correlation matrix was generated to determine if whether predictors were highly correlated (r&gt;0.80).  Most predictors did not follow gaussian-shaped distributions, and there were less than 20 pairs of highly correlated variables, which is relatively few considering there were over 50 predictors (1250 correlations).  Nevertheless, pre-processing with Principal Components Analysis (PCA) can be beneficial since it reduces the amount of noise in the data and reduces the likelihood of overfitting the model.  The function preProcess() was used to generate components that captured 90% of the predictor variance; these 18 components were applied to the data using the predict() function to produce a reduced number of predictors (18 instead of 52).</p>
+
+<h2>Building the Models</h2>
+
+<p>Random Forests was chosen as the modeling method, because it is highly accurate and appropriate for predicting an outcome that is a categorical variable consisting of several categories.  Two competing models were built: one with the original 52 predictors, and another with 18 predictors derived using PCA.  I would expect the PCA model to perform better because components tend to have less noise than the variables from which they are derived.  The PCA model had an optimal accuracy of 95% (for mtry=2), and an out-of-bag (OOB) estimated error rate of 3.6 percent.</p>
+
+<p>Surprisingly, the model using the original 52 predictors performed better, perhaps because the data distributions were not ideally suited to PCA. Below are results from the second model.  Its optimal accuracy was 98.5% (for mtry=27) and OOB estimated error rate was 0.83 percent.</p>
+
+<h2>Testing the Model</h2>
+
+<p>The Testing Set consisted of 7846 observations and 52 predictor variables.  Since the second models performance was clearly better, this model was the only one applied to the Testing Set.  Typically, accuracy in the Training Set is higher than that in the Testing Set.  Since the Training Set had an accuracy of 98.5 percent and an out-of-bag (OOB) error of 0.83 percent, I expected the out-of-sample error to be approximately 1 to 2 percent.  The accuracy observed in the Testing Set was actually higher than this: 99.2 percent, indicating the out-of-sample error was less than 1 percent.  Statistics indicating model performance on the Testing Set is shown below.  This is a highly accurate model.</p>
+
+<p>Overall Statistics</p>
+
+<pre><code>           Accuracy : 0.9912          
+             95% CI : (0.9889, 0.9932)
+No Information Rate : 0.2845          
+P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+
+              Kappa : 0.9889          
+</code></pre>
+
+</body>
+
+</html>
+
